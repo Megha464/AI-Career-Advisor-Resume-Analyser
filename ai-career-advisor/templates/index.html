@@ -1,0 +1,585 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Career Advisor & Resume Analyzer</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        slate: {
+                            850: '#151f32',
+                            900: '#0f172a',
+                            950: '#080c16',
+                        },
+                        indigo: {
+                            500: '#6366f1',
+                            600: '#4f46e5',
+                            700: '#4338ca',
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="/static/css/custom.css">
+</head>
+<body class="bg-slate-950 text-slate-100 min-h-screen flex flex-col antialiased selection:bg-indigo-600 selection:text-white">
+
+    <!-- Top Navigation Bar -->
+    <header class="border-b border-slate-800/80 bg-slate-900/70 backdrop-blur-md sticky top-0 z-40">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
+            <div class="flex items-center gap-3">
+                <div class="w-10 h-10 rounded-xl gradient-bg flex items-center justify-center shadow-lg shadow-indigo-500/25">
+                    <i data-lucide="compass" class="w-6 h-6 text-white"></i>
+                </div>
+                <div>
+                    <h1 class="text-base sm:text-lg font-bold text-white tracking-tight flex items-center gap-2">
+                        AI Career Advisor & Resume Analyzer
+                        <span class="text-[10px] px-2 py-0.5 rounded-full bg-indigo-950 text-indigo-300 border border-indigo-700/60 font-medium">v2.0 Pro</span>
+                    </h1>
+                    <p class="text-xs text-slate-400 hidden sm:block">Intelligent Career Guidance, Skill Gap Detection & Personalized Roadmaps</p>
+                </div>
+            </div>
+            <div class="flex items-center gap-3">
+                <span class="hidden md:inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs bg-emerald-950/60 border border-emerald-800/60 text-emerald-300 font-medium">
+                    <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
+                    Dual Engine: NLP & Gemini LLM
+                </span>
+                <button type="button" onclick="document.getElementById('settingsModal').classList.remove('hidden')" class="p-2 rounded-lg bg-slate-800/80 border border-slate-700 text-slate-300 hover:text-white hover:border-slate-600 transition-colors" title="Settings & API Key">
+                    <i data-lucide="settings" class="w-5 h-5"></i>
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content Container -->
+    <main class="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8">
+
+        <!-- Hero & Inputs Section -->
+        <section class="glass-card rounded-2xl p-6 sm:p-8 border border-slate-800 shadow-2xl relative overflow-hidden">
+            <div class="absolute -right-20 -top-20 w-80 h-80 bg-indigo-600/10 rounded-full blur-3xl pointer-events-none"></div>
+            <div class="absolute -left-20 -bottom-20 w-80 h-80 bg-cyan-600/10 rounded-full blur-3xl pointer-events-none"></div>
+
+            <div class="max-w-3xl mb-6">
+                <h2 class="text-2xl sm:text-3xl font-extrabold text-white tracking-tight mb-2">
+                    Discover Your Ideal Career Path & <span class="gradient-text">Close Your Skill Gaps</span>
+                </h2>
+                <p class="text-sm sm:text-base text-slate-300 leading-relaxed">
+                    Upload your resume, select your career interests, and provide a target job description. Our AI analyzes your experience, evaluates role fits, identifies missing competencies, and builds your custom preparation roadmap.
+                </p>
+            </div>
+
+            <!-- Pre-load Sample Controls -->
+            <div class="mb-6 p-3.5 rounded-xl bg-slate-900/80 border border-slate-800 flex flex-wrap items-center justify-between gap-3">
+                <div class="flex items-center gap-2 text-xs text-slate-300">
+                    <i data-lucide="sparkles" class="w-4 h-4 text-indigo-400"></i>
+                    <span class="font-medium">Quick Test with Demo Samples:</span>
+                </div>
+                <div class="flex flex-wrap items-center gap-3 text-xs">
+                    <select id="sampleResumeSelect" class="bg-slate-800 border border-slate-700 rounded-lg px-3 py-1.5 text-slate-200 text-xs focus:ring-1 focus:ring-indigo-500 outline-none">
+                        <option value="">-- Load Sample Resume --</option>
+                        <option value="junior_fullstack">Junior Full-Stack Developer</option>
+                        <option value="data_science_graduate">Data Science & ML Graduate</option>
+                        <option value="devops_intern">Cloud & DevOps Intern</option>
+                    </select>
+
+                    <select id="sampleJdSelect" class="bg-slate-800 border border-slate-700 rounded-lg px-3 py-1.5 text-slate-200 text-xs focus:ring-1 focus:ring-indigo-500 outline-none">
+                        <option value="">-- Load Target Job Description --</option>
+                        <option value="senior_fullstack">Full Stack Engineer (React/Node)</option>
+                        <option value="ai_ml_engineer">Machine Learning & GenAI Engineer</option>
+                        <option value="devops_cloud_engineer">Cloud & DevOps Engineer (AWS/K8s)</option>
+                    </select>
+                </div>
+            </div>
+
+            <!-- Two-Column Form Inputs -->
+            <form id="analyzerForm" onsubmit="event.preventDefault();" class="space-y-6">
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+
+                    <!-- Left: Resume Upload / Text Area -->
+                    <div class="space-y-3">
+                        <div class="flex items-center justify-between">
+                            <label class="text-sm font-semibold text-slate-200 flex items-center gap-2">
+                                <i data-lucide="file-text" class="w-4 h-4 text-indigo-400"></i>
+                                1. Your Resume (PDF, DOCX, or Text)
+                            </label>
+                            <div class="flex rounded-lg bg-slate-900 border border-slate-800 p-0.5 text-xs">
+                                <button type="button" id="btnFileMode" class="px-2.5 py-1 rounded bg-indigo-600 text-white font-medium">File Upload</button>
+                                <button type="button" id="btnTextMode" class="px-2.5 py-1 rounded text-slate-400 hover:text-white font-medium">Paste Text</button>
+                            </div>
+                        </div>
+
+                        <!-- Drag & Drop Zone -->
+                        <div id="fileUploadSection">
+                            <div id="dropZone" class="drop-zone p-6 rounded-xl text-center cursor-pointer bg-slate-900/50 hover:bg-slate-900/80 border-2 border-dashed border-slate-700 hover:border-indigo-500 transition-all flex flex-col items-center justify-center min-h-[170px]">
+                                <input type="file" id="resumeFileInput" accept=".pdf,.docx,.txt,.md" class="hidden">
+                                <div class="w-12 h-12 rounded-full bg-indigo-950/60 border border-indigo-800/60 flex items-center justify-center mb-3">
+                                    <i data-lucide="upload-cloud" class="w-6 h-6 text-indigo-400"></i>
+                                </div>
+                                <p class="text-sm font-medium text-slate-200 mb-1">Click to browse or drag & drop resume</p>
+                                <p class="text-xs text-slate-400 mb-3">Supports PDF, DOCX, TXT (up to 16 MB)</p>
+                                <button type="button" onclick="event.stopPropagation(); document.getElementById('resumeFileInput').click();" class="px-4 py-1.5 rounded-lg bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-semibold shadow transition-all flex items-center gap-1.5 pointer-events-auto">
+                                    <i data-lucide="folder-open" class="w-3.5 h-3.5"></i> Browse Resume File
+                                </button>
+
+                                <!-- File preview tag -->
+                                <div id="filePreview" class="hidden mt-4 inline-flex items-center gap-2 px-3 py-1.5 rounded-lg bg-indigo-900/60 border border-indigo-700 text-xs text-indigo-200">
+                                    <i data-lucide="file-check" class="w-4 h-4 text-emerald-400"></i>
+                                    <span id="selectedFileName" class="font-medium truncate max-w-xs">resume.pdf</span>
+                                    <span id="selectedFileSize" class="text-slate-400 text-[10px]">(0 KB)</span>
+                                    <button type="button" onclick="removeSelectedFile(event)" class="text-slate-400 hover:text-white ml-2 p-0.5 rounded hover:bg-slate-800">
+                                        <i data-lucide="x" class="w-3.5 h-3.5 text-rose-400"></i>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Direct Text Area Mode (initially hidden) -->
+                        <div id="textInputSection" class="hidden">
+                            <textarea id="resumeTextInput" rows="7" placeholder="Paste your complete resume text here (Summary, Skills, Experience, Education, Projects)..." class="w-full bg-slate-900/90 border border-slate-700/80 rounded-xl p-3 text-xs text-slate-200 placeholder-slate-500 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 outline-none font-mono"></textarea>
+                        </div>
+                    </div>
+
+                    <!-- Right: Target Job Description & Interests -->
+                    <div class="space-y-4">
+                        <div>
+                            <label class="text-sm font-semibold text-slate-200 flex items-center justify-between mb-2">
+                                <span class="flex items-center gap-2">
+                                    <i data-lucide="briefcase" class="w-4 h-4 text-indigo-400"></i>
+                                    2. Target Job Description <span class="text-xs font-normal text-slate-400">(Optional)</span>
+                                </span>
+                                <span class="text-[11px] text-indigo-400">Enables Resume-Job Match %</span>
+                            </label>
+                            <textarea id="targetJdInput" rows="4" placeholder="Paste the job description or role requirements you're targeting (leave blank for general career matching)..." class="w-full bg-slate-900/90 border border-slate-700/80 rounded-xl p-3 text-xs text-slate-200 placeholder-slate-500 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 outline-none"></textarea>
+                        </div>
+
+                        <!-- Interests Tag Picker -->
+                        <div>
+                            <label class="text-sm font-semibold text-slate-200 flex items-center justify-between mb-2">
+                                <span class="flex items-center gap-2">
+                                    <i data-lucide="heart" class="w-4 h-4 text-indigo-400"></i>
+                                    3. Select or Add Your Career Interests
+                                </span>
+                            </label>
+                            <!-- Clickable interest tags -->
+                            <div id="interestTagsContainer" class="flex flex-wrap gap-1.5 mb-2 max-h-24 overflow-y-auto pr-1">
+                                <!-- Populated dynamically from /api/samples -->
+                            </div>
+                            <!-- Custom interest input -->
+                            <div class="flex items-center gap-2">
+                                <input type="text" id="customInterestInput" placeholder="Add custom interest (e.g. Distributed Systems, Robotics) & press Enter..." class="flex-1 bg-slate-900 border border-slate-800 rounded-lg px-3 py-1.5 text-xs text-slate-200 placeholder-slate-500 focus:border-indigo-500 outline-none">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Submit Action Buttons -->
+                <div class="flex flex-col sm:flex-row items-center justify-between gap-4 pt-4 border-t border-slate-800">
+                    <div class="flex items-center gap-2 text-xs text-slate-400">
+                        <i data-lucide="shield-check" class="w-4 h-4 text-emerald-400"></i>
+                        <span>Private & secure. 100% processed locally or with your own API key.</span>
+                    </div>
+                    <div class="flex items-center gap-3 w-full sm:w-auto">
+                        <button type="button" id="resetBtn" class="px-4 py-2.5 rounded-xl border border-slate-700 text-slate-300 hover:text-white hover:border-slate-600 text-xs font-medium transition-all">
+                            Reset
+                        </button>
+                        <button type="button" id="analyzeBtn" class="flex-1 sm:flex-none px-6 py-2.5 rounded-xl gradient-bg text-white font-semibold text-sm shadow-lg shadow-indigo-500/25 hover:shadow-indigo-500/40 hover:opacity-95 transition-all flex items-center justify-center gap-2">
+                            <i data-lucide="sparkles" class="w-4 h-4"></i>
+                            <span>Analyze Resume & Get Career Roadmap</span>
+                        </button>
+                    </div>
+                </div>
+            </form>
+        </section>
+
+        <!-- Dynamic Results Dashboard Section (Hidden by default) -->
+        <section id="resultsSection" class="hidden space-y-6">
+
+            <!-- Candidate Executive Top Card -->
+            <div class="glass-card rounded-2xl p-6 border border-slate-800 flex flex-col md:flex-row md:items-center justify-between gap-6">
+                <div class="space-y-2">
+                    <div class="flex items-center gap-3">
+                        <h3 id="candidateName" class="text-2xl font-bold text-white tracking-tight">Candidate Profile</h3>
+                        <span id="aiBadge" class="hidden px-2.5 py-0.5 rounded-full text-xs font-semibold bg-purple-950 border border-purple-700/60 text-purple-300 flex items-center gap-1">
+                            <i data-lucide="sparkles" class="w-3 h-3 text-purple-400"></i> Gemini AI Enhanced
+                        </span>
+                    </div>
+                    <!-- Contact Badges -->
+                    <div id="candidateContactBadges" class="flex flex-wrap items-center gap-2">
+                        <!-- Populated by JS -->
+                    </div>
+                </div>
+
+                <div class="flex items-center gap-3 shrink-0">
+                    <button type="button" onclick="exportReport()" class="px-4 py-2 rounded-xl bg-indigo-600/20 border border-indigo-500/40 text-indigo-300 hover:bg-indigo-600/30 text-xs font-medium flex items-center gap-2 transition-all">
+                        <i data-lucide="printer" class="w-4 h-4"></i>
+                        <span>Download / Print Report</span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Tab Navigation Bar -->
+            <div class="overflow-x-auto pb-2">
+                <div class="flex items-center gap-2 p-1.5 rounded-xl bg-slate-900 border border-slate-800 min-w-max">
+                    <button type="button" data-tab="tabOverview" class="tab-btn active px-3.5 py-2 rounded-lg text-xs font-semibold flex items-center gap-2 text-slate-400 hover:text-white transition-all">
+                        <i data-lucide="layout-dashboard" class="w-4 h-4"></i> Overview & Score
+                    </button>
+                    <button type="button" data-tab="tabResumeAnalysis" class="tab-btn px-3.5 py-2 rounded-lg text-xs font-semibold flex items-center gap-2 text-slate-400 hover:text-white transition-all">
+                        <i data-lucide="file-check" class="w-4 h-4"></i> Resume & ATS
+                    </button>
+                    <button type="button" data-tab="tabRecommendedRoles" class="tab-btn px-3.5 py-2 rounded-lg text-xs font-semibold flex items-center gap-2 text-slate-400 hover:text-white transition-all">
+                        <i data-lucide="target" class="w-4 h-4"></i> Recommended Roles
+                    </button>
+                    <button type="button" data-tab="tabMatchPercentage" class="tab-btn px-3.5 py-2 rounded-lg text-xs font-semibold flex items-center gap-2 text-slate-400 hover:text-white transition-all">
+                        <i data-lucide="percent" class="w-4 h-4"></i> Job Match %
+                    </button>
+                    <button type="button" data-tab="tabSkillAnalysis" class="tab-btn px-3.5 py-2 rounded-lg text-xs font-semibold flex items-center gap-2 text-slate-400 hover:text-white transition-all">
+                        <i data-lucide="layers" class="w-4 h-4"></i> Skill Analysis
+                    </button>
+                    <button type="button" data-tab="tabMissingSkills" class="tab-btn px-3.5 py-2 rounded-lg text-xs font-semibold flex items-center gap-2 text-slate-400 hover:text-white transition-all">
+                        <i data-lucide="alert-triangle" class="w-4 h-4"></i> Missing Skills
+                    </button>
+                    <button type="button" data-tab="tabRoadmap" class="tab-btn px-3.5 py-2 rounded-lg text-xs font-semibold flex items-center gap-2 text-slate-400 hover:text-white transition-all">
+                        <i data-lucide="map" class="w-4 h-4"></i> Learning Roadmap
+                    </button>
+                    <button type="button" data-tab="tabProjects" class="tab-btn px-3.5 py-2 rounded-lg text-xs font-semibold flex items-center gap-2 text-slate-400 hover:text-white transition-all">
+                        <i data-lucide="folder-git-2" class="w-4 h-4"></i> Recommended Projects
+                    </button>
+                    <button type="button" data-tab="tabInterviews" class="tab-btn px-3.5 py-2 rounded-lg text-xs font-semibold flex items-center gap-2 text-slate-400 hover:text-white transition-all">
+                        <i data-lucide="message-square-code" class="w-4 h-4"></i> Interview Prep
+                    </button>
+                </div>
+            </div>
+
+            <!-- Tab 1: Overview & Career Readiness Score -->
+            <div id="tabOverview" class="tab-content space-y-6">
+                <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+
+                    <!-- Score Radial & Tier Gauge -->
+                    <div class="glass-card p-6 rounded-2xl border border-slate-800 flex flex-col items-center justify-center text-center relative">
+                        <h4 class="text-xs uppercase tracking-wider text-slate-400 font-semibold mb-4">Overall Career Readiness Score</h4>
+                        
+                        <div class="relative w-36 h-36 flex items-center justify-center my-2">
+                            <svg class="w-full h-full transform -rotate-90" viewBox="0 0 120 120">
+                                <circle cx="60" cy="60" r="52" stroke="#1e293b" stroke-width="10" fill="transparent" />
+                                <circle id="readinessCircleProgress" cx="60" cy="60" r="52" stroke="url(#scoreGrad)" stroke-width="10" stroke-dasharray="326.7" stroke-dashoffset="65" stroke-linecap="round" fill="transparent" class="transition-all duration-1000 ease-out" />
+                                <defs>
+                                    <linearGradient id="scoreGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+                                        <stop offset="0%" stop-color="#4f46e5" />
+                                        <stop offset="100%" stop-color="#10b981" />
+                                    </linearGradient>
+                                </defs>
+                            </svg>
+                            <div class="absolute flex flex-col items-center justify-center">
+                                <span id="readinessScoreNumber" class="text-4xl font-extrabold text-white">82</span>
+                                <span class="text-[11px] text-slate-400 uppercase tracking-widest font-semibold">/ 100</span>
+                            </div>
+                        </div>
+
+                        <div class="mt-4">
+                            <span id="readinessTierBadge" class="px-3 py-1 rounded-full text-xs font-bold bg-emerald-950/80 border border-emerald-700/60 text-emerald-300">
+                                Competitive Profile
+                            </span>
+                            <p id="readinessSummaryText" class="text-xs text-slate-300 mt-2 max-w-xs leading-relaxed"></p>
+                        </div>
+                    </div>
+
+                    <!-- Radar Competency Chart -->
+                    <div class="glass-card p-6 rounded-2xl border border-slate-800 flex flex-col">
+                        <h4 class="text-xs uppercase tracking-wider text-slate-400 font-semibold mb-2">Competency Dimensions</h4>
+                        <div class="flex-1 relative min-h-[220px]">
+                            <canvas id="readinessRadarChart"></canvas>
+                        </div>
+                    </div>
+
+                    <!-- Executive Summary & Actionable Quick Wins -->
+                    <div class="glass-card p-6 rounded-2xl border border-slate-800 flex flex-col justify-between space-y-4">
+                        <div>
+                            <h4 class="text-xs uppercase tracking-wider text-slate-400 font-semibold mb-2 flex items-center gap-1.5">
+                                <i data-lucide="file-badge" class="w-3.5 h-3.5 text-indigo-400"></i>
+                                Recruiter Summary
+                            </h4>
+                            <p id="executiveSummaryText" class="text-xs text-slate-300 leading-relaxed bg-slate-900/60 p-3 rounded-xl border border-slate-800"></p>
+                        </div>
+
+                        <div>
+                            <h4 class="text-xs uppercase tracking-wider text-slate-400 font-semibold mb-2 flex items-center gap-1.5">
+                                <i data-lucide="zap" class="w-3.5 h-3.5 text-amber-400"></i>
+                                High-Impact Quick Wins (Next 48 Hours)
+                            </h4>
+                            <ul id="quickWinsList" class="space-y-2">
+                                <!-- Populated dynamically -->
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Tab 2: Resume Analysis & ATS -->
+            <div id="tabResumeAnalysis" class="tab-content hidden space-y-6">
+                <!-- Metrics Bar -->
+                <div class="grid grid-cols-2 sm:grid-cols-4 gap-4">
+                    <div class="glass-card p-4 rounded-xl border border-slate-800 text-center">
+                        <span class="text-slate-400 text-xs block mb-1">Resume Impact Score</span>
+                        <span id="resumeImpactScore" class="text-2xl font-black text-indigo-400">78/100</span>
+                    </div>
+                    <div class="glass-card p-4 rounded-xl border border-slate-800 text-center">
+                        <span class="text-slate-400 text-xs block mb-1">Total Word Count</span>
+                        <span id="resumeWordCount" class="text-base font-bold text-slate-200">380 words</span>
+                    </div>
+                    <div class="glass-card p-4 rounded-xl border border-slate-800 text-center">
+                        <span class="text-slate-400 text-xs block mb-1">Action Verbs Found</span>
+                        <span id="actionVerbsCount" class="text-2xl font-black text-emerald-400">12</span>
+                    </div>
+                    <div class="glass-card p-4 rounded-xl border border-slate-800 text-center">
+                        <span class="text-slate-400 text-xs block mb-1">Quantified Metrics</span>
+                        <span id="quantifiedCount" class="text-2xl font-black text-purple-400">6</span>
+                    </div>
+                </div>
+
+                <!-- Strengths & Weaknesses 2-Column -->
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div class="glass-card p-5 rounded-xl border border-slate-800 space-y-3">
+                        <h4 class="text-sm font-bold text-white flex items-center gap-2">
+                            <i data-lucide="check-circle-2" class="w-4 h-4 text-emerald-400"></i>
+                            Key Resume Strengths
+                        </h4>
+                        <div id="resumeStrengthsList" class="space-y-2"></div>
+                    </div>
+                    <div class="glass-card p-5 rounded-xl border border-slate-800 space-y-3">
+                        <h4 class="text-sm font-bold text-white flex items-center gap-2">
+                            <i data-lucide="alert-triangle" class="w-4 h-4 text-amber-400"></i>
+                            Weaknesses & ATS Red Flags
+                        </h4>
+                        <div id="resumeWeaknessesList" class="space-y-2"></div>
+                    </div>
+                </div>
+
+                <!-- Detected Tags: Verbs & Metrics -->
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div class="glass-card p-5 rounded-xl border border-slate-800">
+                        <h4 class="text-xs uppercase tracking-wider text-slate-400 font-semibold mb-3">Detected Quantified Metrics</h4>
+                        <div id="detectedMetricsContainer" class="flex flex-wrap gap-2"></div>
+                    </div>
+                    <div class="glass-card p-5 rounded-xl border border-slate-800">
+                        <h4 class="text-xs uppercase tracking-wider text-slate-400 font-semibold mb-3">Detected Strong Action Verbs</h4>
+                        <div id="detectedActionVerbsContainer" class="flex flex-wrap gap-2"></div>
+                    </div>
+                </div>
+
+                <!-- Optimized Bullet Points (XYZ Formula) -->
+                <div class="glass-card p-6 rounded-xl border border-slate-800 space-y-4">
+                    <div class="flex items-center justify-between">
+                        <h4 class="text-sm font-bold text-white flex items-center gap-2">
+                            <i data-lucide="wand-2" class="w-4 h-4 text-indigo-400"></i>
+                            Optimized High-Impact Resume Bullets (XYZ Formula: "Accomplished [X], measured by [Y], by doing [Z]")
+                        </h4>
+                    </div>
+                    <div id="optimizedBulletsContainer" class="space-y-3"></div>
+                </div>
+            </div>
+
+            <!-- Tab 3: Recommended Job Roles -->
+            <div id="tabRecommendedRoles" class="tab-content hidden space-y-6">
+                <div>
+                    <h3 class="text-lg font-bold text-white mb-1">Top Suitable Career Paths</h3>
+                    <p class="text-xs text-slate-400">Ranked by your resume skills, practical experience, and stated career interests.</p>
+                </div>
+                <div id="recommendedRolesGrid" class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <!-- Populated by JS -->
+                </div>
+            </div>
+
+            <!-- Tab 4: Resume-Job Match Percentage -->
+            <div id="tabMatchPercentage" class="tab-content hidden space-y-6">
+                <div class="glass-card p-6 rounded-2xl border border-slate-800 grid grid-cols-1 md:grid-cols-3 gap-6 items-center">
+                    <div class="text-center md:border-r border-slate-800 pr-4">
+                        <span class="text-xs uppercase tracking-wider text-slate-400 block mb-1">Overall Match Score</span>
+                        <div id="jobMatchScoreNumber" class="text-5xl font-black text-emerald-400 my-2">78%</div>
+                        <span id="jobMatchVerdict" class="text-xs px-2.5 py-1 rounded-full bg-emerald-950 text-emerald-300 border border-emerald-800 font-medium">Strong Match</span>
+                    </div>
+
+                    <div class="md:col-span-2 space-y-4">
+                        <div>
+                            <div class="flex items-center justify-between text-xs mb-1">
+                                <span class="text-slate-300 font-medium">Hard / Technical Skills Match</span>
+                                <span id="hardSkillMatchPct" class="text-indigo-400 font-bold">85%</span>
+                            </div>
+                            <div class="w-full h-2.5 rounded-full bg-slate-800 overflow-hidden">
+                                <div id="hardSkillProgressBar" class="h-full bg-indigo-500 rounded-full transition-all duration-700" style="width: 85%"></div>
+                            </div>
+                        </div>
+
+                        <div>
+                            <div class="flex items-center justify-between text-xs mb-1">
+                                <span class="text-slate-300 font-medium">Soft Skills & Methodologies</span>
+                                <span id="softSkillMatchPct" class="text-cyan-400 font-bold">70%</span>
+                            </div>
+                            <div class="w-full h-2.5 rounded-full bg-slate-800 overflow-hidden">
+                                <div id="softSkillProgressBar" class="h-full bg-cyan-500 rounded-full transition-all duration-700" style="width: 70%"></div>
+                            </div>
+                        </div>
+
+                        <div>
+                            <div class="flex items-center justify-between text-xs mb-1">
+                                <span class="text-slate-300 font-medium">Semantic Keyword & Domain Alignment</span>
+                                <span id="semanticSimPct" class="text-purple-400 font-bold">75%</span>
+                            </div>
+                            <div class="w-full h-2.5 rounded-full bg-slate-800 overflow-hidden">
+                                <div id="semanticProgressBar" class="h-full bg-purple-500 rounded-full transition-all duration-700" style="width: 75%"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Matched vs Missing Skills Preview -->
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div class="glass-card p-5 rounded-xl border border-slate-800">
+                        <h4 class="text-xs uppercase tracking-wider text-slate-400 font-semibold mb-3 flex items-center gap-1.5">
+                            <i data-lucide="check-check" class="w-4 h-4 text-emerald-400"></i>
+                            Directly Matched Skills in Job Description
+                        </h4>
+                        <div id="matchedSkillsTags" class="flex flex-wrap gap-1.5"></div>
+                    </div>
+
+                    <div class="glass-card p-5 rounded-xl border border-slate-800">
+                        <h4 class="text-xs uppercase tracking-wider text-slate-400 font-semibold mb-3 flex items-center gap-1.5">
+                            <i data-lucide="alert-circle" class="w-4 h-4 text-rose-400"></i>
+                            Missing Job Description Requirements
+                        </h4>
+                        <div id="missingSkillsPreviewTags" class="flex flex-wrap gap-1.5"></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Tab 5: Skill Analysis -->
+            <div id="tabSkillAnalysis" class="tab-content hidden space-y-6">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <h3 class="text-lg font-bold text-white">Extracted Skills Breakdown</h3>
+                        <p class="text-xs text-slate-400">Classified into industry domains and engineering disciplines.</p>
+                    </div>
+                    <span id="totalSkillsCount" class="px-3 py-1 rounded-full text-xs font-bold bg-indigo-950 text-indigo-300 border border-indigo-700">18 Skills</span>
+                </div>
+                <div id="skillCategoriesGrid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                    <!-- Populated by JS -->
+                </div>
+            </div>
+
+            <!-- Tab 6: Missing Skills -->
+            <div id="tabMissingSkills" class="tab-content hidden space-y-6">
+                <div>
+                    <h3 class="text-lg font-bold text-white mb-1">Target Skill Gap Analysis</h3>
+                    <p class="text-xs text-slate-400">Prioritized competencies needed to become a top-tier candidate for this role.</p>
+                </div>
+                <div id="missingSkillsDetailedContainer" class="space-y-3">
+                    <!-- Populated by JS -->
+                </div>
+            </div>
+
+            <!-- Tab 7: Personalized Learning Roadmap -->
+            <div id="tabRoadmap" class="tab-content hidden space-y-6">
+                <div>
+                    <h3 class="text-lg font-bold text-white mb-1">Personalized 12-Week Preparation Roadmap</h3>
+                    <p class="text-xs text-slate-400">Interactive step-by-step milestones to close your skill gaps and build portfolio evidence.</p>
+                </div>
+                <div id="roadmapPhasesTimeline" class="space-y-2 mt-4">
+                    <!-- Populated by JS -->
+                </div>
+            </div>
+
+            <!-- Tab 8: Recommended Projects -->
+            <div id="tabProjects" class="tab-content hidden space-y-6">
+                <div>
+                    <h3 class="text-lg font-bold text-white mb-1">Targeted Portfolio Projects</h3>
+                    <p class="text-xs text-slate-400">Designed to bridge your exact missing skills and impress technical recruiters.</p>
+                </div>
+                <div id="recommendedProjectsGrid" class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <!-- Populated by JS -->
+                </div>
+            </div>
+
+            <!-- Tab 9: Interview Questions -->
+            <div id="tabInterviews" class="tab-content hidden space-y-6">
+                <div>
+                    <h3 class="text-lg font-bold text-white mb-1">Tailored Interview Preparation</h3>
+                    <p class="text-xs text-slate-400">Technical, system design, and behavioral questions tailored to your profile.</p>
+                </div>
+                <div id="interviewQuestionsList" class="space-y-3">
+                    <!-- Populated by JS -->
+                </div>
+            </div>
+
+        </section>
+
+    </main>
+
+    <!-- Footer -->
+    <footer class="border-t border-slate-800/80 bg-slate-950 py-6 mt-12 text-center text-xs text-slate-400">
+        <div class="max-w-7xl mx-auto px-4 flex flex-col sm:flex-row items-center justify-between gap-3">
+            <p>AI Career Advisor & Resume Analyzer • Empowering Job Seekers Worldwide</p>
+            <p class="text-slate-400">Built with Python, Flask, Semantic NLP & Google Gemini AI</p>
+        </div>
+    </footer>
+
+    <!-- Settings & API Key Modal -->
+    <div id="settingsModal" class="hidden fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
+        <div class="glass-card max-w-md w-full rounded-2xl p-6 border border-slate-700 shadow-2xl relative">
+            <div class="flex items-center justify-between mb-4">
+                <h3 class="text-base font-bold text-white flex items-center gap-2">
+                    <i data-lucide="key" class="w-4 h-4 text-indigo-400"></i>
+                    AI Engine Configuration
+                </h3>
+                <button type="button" onclick="document.getElementById('settingsModal').classList.add('hidden')" class="text-slate-400 hover:text-white">
+                    <i data-lucide="x" class="w-5 h-5"></i>
+                </button>
+            </div>
+            <p class="text-xs text-slate-300 mb-4 leading-relaxed">
+                The application features a built-in <strong>Intelligent Semantic NLP Engine</strong> that runs 100% offline without any API key.
+                <br><br>
+                Optionally enter a <strong>Google Gemini API Key</strong> to enable hyper-personalized generative advisory, tailored resume bullet rewrites, and deep custom interview questions.
+            </p>
+            <div class="space-y-3">
+                <label class="text-xs font-semibold text-slate-300 block">Google Gemini API Key (Optional)</label>
+                <input type="password" id="apiKeyInput" placeholder="AIzaSy..." class="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-xs text-white placeholder-slate-500 focus:border-indigo-500 outline-none">
+            </div>
+            <div class="mt-5 flex justify-end gap-2">
+                <button type="button" onclick="document.getElementById('settingsModal').classList.add('hidden')" class="px-4 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-medium transition-colors">
+                    Save & Close
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Loading Overlay -->
+    <div id="loadingOverlay" class="hidden fixed inset-0 z-50 flex flex-col items-center justify-center bg-slate-950/80 backdrop-blur-md">
+        <div class="w-16 h-16 rounded-2xl gradient-bg flex items-center justify-center shadow-xl shadow-indigo-500/30 animate-bounce mb-4">
+            <i data-lucide="cpu" class="w-8 h-8 text-white"></i>
+        </div>
+        <h4 class="text-lg font-bold text-white mb-1">Analyzing Your Career Profile...</h4>
+        <p class="text-xs text-indigo-300 animate-pulse">Extracting skills, computing role match, and generating roadmap</p>
+    </div>
+
+    <!-- Toast Notification -->
+    <div id="toastNotification" class="hidden fixed bottom-5 right-5 z-50 transition-all duration-300 transform translate-y-10 opacity-0">
+        <div class="flex items-center gap-2.5 px-4 py-3 rounded-xl bg-slate-900 border border-indigo-500/60 text-white shadow-2xl text-xs font-medium">
+            <i data-lucide="info" class="w-4 h-4 text-indigo-400"></i>
+            <span id="toastMessage">Notification message</span>
+        </div>
+    </div>
+
+    <!-- Application Script -->
+    <script src="/static/js/app.js"></script>
+</body>
+</html>

@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Career Advisory & Resume Analysis Report - {{ data.candidate_info.name or 'Candidate' }}</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @media print {
+            .no-print { display: none !important; }
+            body { background: white !important; color: #1e293b !important; }
+            .page-break { page-break-after: always; }
+        }
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+    </style>
+</head>
+<body class="bg-slate-50 text-slate-900 p-6 sm:p-10 max-w-5xl mx-auto">
+
+    <!-- Print / Export Bar -->
+    <div class="no-print mb-8 p-4 bg-indigo-50 border border-indigo-200 rounded-xl flex items-center justify-between">
+        <div>
+            <h2 class="text-sm font-bold text-indigo-900">Career Advisory Report Generated</h2>
+            <p class="text-xs text-indigo-700">Use browser print to save as PDF or print hard copy.</p>
+        </div>
+        <button onclick="window.print()" class="px-4 py-2 rounded-lg bg-indigo-600 text-white text-xs font-semibold hover:bg-indigo-700 transition-colors shadow">
+            Print / Save as PDF
+        </button>
+    </div>
+
+    <!-- Report Header -->
+    <header class="border-b-2 border-slate-300 pb-6 mb-8 flex justify-between items-start">
+        <div>
+            <h1 class="text-3xl font-black text-slate-900 tracking-tight">{{ data.candidate_info.name or 'Candidate Career Report' }}</h1>
+            <div class="flex flex-wrap gap-4 text-xs text-slate-600 mt-2 font-mono">
+                {% if data.candidate_info.email %}<span>Email: {{ data.candidate_info.email }}</span>{% endif %}
+                {% if data.candidate_info.phone %}<span>Phone: {{ data.candidate_info.phone }}</span>{% endif %}
+                {% if data.candidate_info.github %}<span>GitHub: {{ data.candidate_info.github }}</span>{% endif %}
+                {% if data.candidate_info.linkedin %}<span>LinkedIn: {{ data.candidate_info.linkedin }}</span>{% endif %}
+            </div>
+        </div>
+        <div class="text-right">
+            <div class="text-3xl font-black text-indigo-600">{{ data.readiness_score.overall_score }}/100</div>
+            <div class="text-[11px] font-bold uppercase tracking-wider text-slate-500">Readiness Score</div>
+            <span class="inline-block mt-1 px-2.5 py-0.5 rounded text-xs font-bold bg-indigo-100 text-indigo-800">
+                {{ data.readiness_score.status_tier }}
+            </span>
+        </div>
+    </header>
+
+    <!-- Executive Summary & Diagnostics -->
+    <section class="mb-8">
+        <h2 class="text-base font-bold text-slate-900 uppercase tracking-wider mb-2 border-b border-slate-200 pb-1">1. Executive Summary & Readiness Assessment</h2>
+        <p class="text-sm text-slate-700 leading-relaxed mb-4 bg-white p-4 rounded-lg border border-slate-200">
+            {{ data.resume_analysis.summary }}
+        </p>
+
+        <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 text-center mb-4">
+            <div class="bg-white p-3 rounded-lg border border-slate-200">
+                <span class="text-xs text-slate-500 block">Technical Competency</span>
+                <span class="text-lg font-bold text-slate-800">{{ data.readiness_score.breakdown.technical_competency }}/100</span>
+            </div>
+            <div class="bg-white p-3 rounded-lg border border-slate-200">
+                <span class="text-xs text-slate-500 block">ATS & Impact Score</span>
+                <span class="text-lg font-bold text-slate-800">{{ data.readiness_score.breakdown.resume_impact_ats }}/100</span>
+            </div>
+            <div class="bg-white p-3 rounded-lg border border-slate-200">
+                <span class="text-xs text-slate-500 block">Project Strength</span>
+                <span class="text-lg font-bold text-slate-800">{{ data.readiness_score.breakdown.project_strength }}/100</span>
+            </div>
+            <div class="bg-white p-3 rounded-lg border border-slate-200">
+                <span class="text-xs text-slate-500 block">Role Alignment</span>
+                <span class="text-lg font-bold text-slate-800">{{ data.readiness_score.breakdown.job_alignment }}/100</span>
+            </div>
+        </div>
+
+        <div class="bg-amber-50 border border-amber-200 p-4 rounded-lg text-xs text-amber-900">
+            <span class="font-bold block mb-1">Recommended Quick Wins:</span>
+            <ul class="list-disc list-inside space-y-1">
+                {% for win in data.readiness_score.quick_wins %}
+                <li>{{ win }}</li>
+                {% endfor %}
+            </ul>
+        </div>
+    </section>
+
+    <!-- Resume Analysis (Strengths & Gaps) -->
+    <section class="mb-8">
+        <h2 class="text-base font-bold text-slate-900 uppercase tracking-wider mb-2 border-b border-slate-200 pb-1">2. Resume Strengths & Weaknesses</h2>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div class="bg-emerald-50 border border-emerald-200 p-4 rounded-lg">
+                <h3 class="text-xs font-bold text-emerald-900 uppercase mb-2">Key Strengths Detected</h3>
+                <ul class="text-xs text-emerald-800 space-y-1.5 list-disc list-inside">
+                    {% for s in data.resume_analysis.strengths %}
+                    <li>{{ s }}</li>
+                    {% endfor %}
+                </ul>
+            </div>
+            <div class="bg-rose-50 border border-rose-200 p-4 rounded-lg">
+                <h3 class="text-xs font-bold text-rose-900 uppercase mb-2">Areas for Improvement / Red Flags</h3>
+                <ul class="text-xs text-rose-800 space-y-1.5 list-disc list-inside">
+                    {% for w in data.resume_analysis.weaknesses %}
+                    <li>{{ w }}</li>
+                    {% endfor %}
+                </ul>
+            </div>
+        </div>
+    </section>
+
+    <!-- Recommended Job Roles -->
+    <section class="mb-8">
+        <h2 class="text-base font-bold text-slate-900 uppercase tracking-wider mb-2 border-b border-slate-200 pb-1">3. Top Recommended Career Roles</h2>
+        <div class="space-y-3">
+            {% for role in data.recommended_roles %}
+            <div class="bg-white p-4 rounded-lg border border-slate-200 flex justify-between items-start">
+                <div>
+                    <h3 class="text-sm font-bold text-slate-900">{{ role.title }} <span class="text-xs font-normal text-slate-500">({{ role.category }})</span></h3>
+                    <p class="text-xs text-slate-600 mt-1">{{ role.description }}</p>
+                    <div class="mt-2 text-xs text-slate-500">
+                        <span class="font-semibold">Est. Salary:</span> US: {{ role.salary_range.us }} | India: {{ role.salary_range.in }}
+                    </div>
+                </div>
+                <div class="text-right shrink-0">
+                    <span class="text-xl font-bold text-indigo-600">{{ role.confidence }}%</span>
+                    <div class="text-[10px] text-slate-500 uppercase">Match</div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </section>
+
+    <!-- Missing Skills -->
+    <section class="mb-8">
+        <h2 class="text-base font-bold text-slate-900 uppercase tracking-wider mb-2 border-b border-slate-200 pb-1">4. Skill Gap Analysis (Missing Skills)</h2>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+            {% for item in data.missing_skills %}
+            <div class="bg-white p-3 rounded-lg border border-slate-200">
+                <div class="flex justify-between items-center mb-1">
+                    <span class="text-xs font-bold text-slate-900">{{ item.skill }}</span>
+                    <span class="text-[10px] font-bold px-2 py-0.5 rounded bg-slate-100 text-slate-700">{{ item.priority }}</span>
+                </div>
+                <p class="text-[11px] text-slate-600 mb-2">{{ item.why_needed }}</p>
+                <div class="flex gap-4 text-[10px] text-slate-500 font-medium">
+                    <span>Est. Time: {{ item.time_to_learn }}</span>
+                    <span>Difficulty: {{ item.difficulty }}</span>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </section>
+
+    <!-- Learning Roadmap -->
+    <section class="mb-8 page-break">
+        <h2 class="text-base font-bold text-slate-900 uppercase tracking-wider mb-2 border-b border-slate-200 pb-1">5. Personalized Preparation Roadmap</h2>
+        <div class="space-y-4">
+            {% for phase in data.learning_roadmap %}
+            <div class="bg-white p-4 rounded-lg border border-slate-200">
+                <div class="flex justify-between items-center mb-1">
+                    <h3 class="text-sm font-bold text-indigo-900">{{ phase.phase }}</h3>
+                    <span class="text-xs text-slate-500 font-medium">{{ phase.duration }}</span>
+                </div>
+                <p class="text-xs text-slate-600 italic mb-2">Goal: {{ phase.goal }}</p>
+                <ul class="list-disc list-inside text-xs text-slate-700 space-y-1 mb-2">
+                    {% for t in phase.topics %}
+                    <li>{{ t }}</li>
+                    {% endfor %}
+                </ul>
+            </div>
+            {% endfor %}
+        </div>
+    </section>
+
+    <!-- Recommended Projects -->
+    <section class="mb-8">
+        <h2 class="text-base font-bold text-slate-900 uppercase tracking-wider mb-2 border-b border-slate-200 pb-1">6. Recommended Portfolio Projects</h2>
+        <div class="space-y-4">
+            {% for proj in data.recommended_projects %}
+            <div class="bg-white p-4 rounded-lg border border-slate-200">
+                <h3 class="text-sm font-bold text-slate-900">{{ proj.title }}</h3>
+                <p class="text-xs text-slate-600 mb-2">{{ proj.summary }}</p>
+                <div class="text-xs text-slate-500 mb-2"><span class="font-semibold">Tech Stack:</span> {{ proj.tech_stack | join(', ') }}</div>
+                <div class="bg-slate-50 p-2.5 rounded border border-slate-200 text-xs text-emerald-800 font-medium">
+                    <span class="block text-[10px] text-slate-500 uppercase font-bold mb-0.5">Ready-to-Use Resume Bullet:</span>
+                    "{{ proj.resume_bullet }}"
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </section>
+
+    <!-- Tailored Interview Questions -->
+    <section class="mb-8">
+        <h2 class="text-base font-bold text-slate-900 uppercase tracking-wider mb-2 border-b border-slate-200 pb-1">7. Key Interview Preparation Questions</h2>
+        <div class="space-y-3">
+            {% for q in data.interview_questions %}
+            <div class="bg-white p-4 rounded-lg border border-slate-200">
+                <span class="text-[10px] font-bold uppercase px-2 py-0.5 rounded bg-indigo-100 text-indigo-800">{{ q.category }}</span>
+                <h3 class="text-xs font-bold text-slate-900 mt-1.5 mb-1">{{ q.question }}</h3>
+                <p class="text-[11px] text-slate-600"><span class="font-semibold">Key Concepts:</span> {{ q.key_points | join(' • ') if q.key_points else (q.what_interviewers_look_for or '') }}</p>
+            </div>
+            {% endfor %}
+        </div>
+    </section>
+
+    <footer class="text-center text-xs text-slate-400 pt-6 border-t border-slate-300">
+        Generated by AI Career Advisor & Resume Analyzer
+    </footer>
+
+</body>
+</html>

@@ -37,29 +37,37 @@ The application is built with a resilient dual-engine architecture:
 
 ## 📁 Project Structure
 
+The project features a clean separation between frontend presentation and backend services:
+
 ```text
 ai-career-advisor/
-├── analyzer/
-│   ├── __init__.py           # Master analysis pipeline
-│   ├── parser.py             # PDF, DOCX, TXT text & metric extraction
-│   ├── skills_db.py          # 500+ skills taxonomy and alias mappings
-│   ├── roles_db.py           # 16+ career role definitions & interview banks
-│   ├── nlp_engine.py         # TF-IDF, match scoring, readiness, roadmaps
-│   ├── ai_engine.py          # Optional Google Gemini API integration
-│   └── samples.py            # Built-in sample resumes, JDs, and interests
-├── static/
-│   ├── css/
-│   │   └── custom.css        # Glassmorphism, animations, print styling
-│   └── js/
-│       └── app.js            # UI logic, Chart.js radar & gauges, tab state
-├── templates/
-│   ├── index.html            # Main interactive dashboard UI
-│   └── report.html           # Standalone printable/PDF export report
-├── uploads/                  # Temporary upload directory
-├── requirements.txt          # Python dependencies
-├── run.bat                   # Windows one-click start script
-├── test_analyzer.py          # Automated test suite
-└── README.md                 # Documentation
+├── backend/
+│   ├── analyzer/
+│   │   ├── __init__.py           # Master analysis pipeline
+│   │   ├── parser.py             # PDF, DOCX, TXT text & metric extraction
+│   │   ├── skills_db.py          # 500+ skills taxonomy and alias mappings
+│   │   ├── roles_db.py           # 16+ career role definitions & interview banks
+│   │   ├── nlp_engine.py         # TF-IDF, match scoring, readiness, roadmaps
+│   │   ├── ai_engine.py          # Optional Google Gemini API integration
+│   │   ├── embeddings.py         # Semantic embedding utilities
+│   │   └── samples.py            # Built-in sample resumes, JDs, and interests
+│   ├── uploads/                  # Temporary upload directory
+│   ├── app.py                    # Flask server & REST API (with CORS support)
+│   ├── requirements.txt          # Python dependencies
+│   ├── test_analyzer.py          # Automated test suite
+│   └── run.bat                   # Backend start script
+├── frontend/
+│   ├── static/
+│   │   ├── css/
+│   │   │   └── custom.css        # Glassmorphism, animations, print styling
+│   │   └── js/
+│   │       └── app.js            # UI logic, Chart.js radar & gauges, API client
+│   └── templates/
+│       ├── index.html            # Main interactive dashboard UI
+│       └── report.html           # Standalone printable/PDF export report
+├── .gitignore                    # Git ignore rules for pycache, uploads, venvs
+├── run.bat                       # Root one-click start script
+└── README.md                     # Documentation
 ```
 
 ---
@@ -72,26 +80,34 @@ ai-career-advisor/
 
 ### 1. Install Dependencies
 ```bash
-cd ai-career-advisor
-pip install -r requirements.txt
+pip install -r backend/requirements.txt
 ```
 
 ### 2. Run the Application
-On Windows, you can double-click `run.bat` or run:
+On Windows, you can double-click `run.bat` in the root folder or run:
 ```bash
+python backend/app.py
+```
+
+Alternatively, from the `backend/` folder:
+```bash
+cd backend
 python app.py
 ```
 
 ### 3. Open in Browser
 Visit **[http://127.0.0.1:5000](http://127.0.0.1:5000)** in your browser.
 
+> [!NOTE]
+> The backend automatically serves the frontend templates and static assets, while also providing full CORS support if you prefer hosting or developing the frontend independently on another port (e.g., Live Server or port 3000/5500).
+
 ---
 
 ## 🧪 Running Automated Tests
 
-Run the test suite to verify all 9 modules and REST endpoints:
+Run the test suite to verify all 9 modules, REST endpoints, and frontend asset serving:
 ```bash
-python test_analyzer.py
+python backend/test_analyzer.py
 ```
 
 ---

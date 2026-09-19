@@ -4,7 +4,11 @@
  * Chart.js visualizations, and DOM updates for all 9 modules.
  */
 
-// Application State
+// Application State & Configuration
+const API_BASE_URL = (window.location.port === '5000' || (!window.location.port && window.location.protocol.startsWith('http') && !window.location.hostname.includes('localhost') && !window.location.hostname.includes('127.0.0.1')))
+    ? ''
+    : (window.location.origin.includes(':5000') ? '' : 'http://127.0.0.1:5000');
+
 let currentAnalysisData = null;
 let selectedInterests = new Set();
 let uploadedFile = null;
@@ -130,7 +134,7 @@ function setupEventListeners() {
 // Fetch Pre-loaded Samples
 async function fetchSamples() {
     try {
-        const resp = await fetch('/api/samples');
+        const resp = await fetch(`${API_BASE_URL}/api/samples`);
         if (resp.ok) {
             samplesData = await resp.json();
             renderInterestTags(samplesData.interests);
@@ -255,7 +259,7 @@ async function startAnalysis() {
     formData.append('api_key', apiKey);
 
     try {
-        const response = await fetch('/api/analyze', {
+        const response = await fetch(`${API_BASE_URL}/api/analyze`, {
             method: 'POST',
             body: formData
         });
@@ -816,7 +820,7 @@ function exportReport() {
         return;
     }
     // Open print view in new window
-    fetch('/api/export-report', {
+    fetch(`${API_BASE_URL}/api/export-report`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(currentAnalysisData)

@@ -3,8 +3,16 @@ Comprehensive Automated Test Suite for AI Career Advisor & Resume Analyzer.
 Verifies all 9 output modules, parser, NLP semantic engine, and API routes.
 """
 
+import os
+import sys
 import unittest
 import json
+
+# Ensure backend directory is in sys.path
+backend_dir = os.path.dirname(os.path.abspath(__file__))
+if backend_dir not in sys.path:
+    sys.path.insert(0, backend_dir)
+
 from app import app
 from analyzer import run_complete_career_analysis
 from analyzer.samples import SAMPLE_RESUMES, SAMPLE_JOB_DESCRIPTIONS
@@ -114,6 +122,21 @@ class TestCareerAdvisor(unittest.TestCase):
         )
         self.assertEqual(response.status_code, 200)
         self.assertIn(b"Career Advisory", response.data)
+
+    def test_frontend_serving(self):
+        """Verify frontend templates and static assets are located and served correctly."""
+        # Index template
+        response = self.app.get('/')
+        self.assertEqual(response.status_code, 200)
+        self.assertIn(b"AI Career Advisor & Resume Analyzer", response.data)
+
+        # Static CSS
+        response = self.app.get('/static/css/custom.css')
+        self.assertEqual(response.status_code, 200)
+
+        # Static JS
+        response = self.app.get('/static/js/app.js')
+        self.assertEqual(response.status_code, 200)
 
 if __name__ == '__main__':
     unittest.main()

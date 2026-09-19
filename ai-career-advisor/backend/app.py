@@ -18,10 +18,28 @@ from analyzer.samples import (
     INTEREST_OPTIONS
 )
 
-app = Flask(__name__)
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+FRONTEND_DIR = os.path.abspath(os.path.join(BASE_DIR, '..', 'frontend'))
+TEMPLATE_DIR = os.path.join(FRONTEND_DIR, 'templates')
+STATIC_DIR = os.path.join(FRONTEND_DIR, 'static')
+UPLOAD_DIR = os.path.join(BASE_DIR, 'uploads')
+
+app = Flask(
+    __name__,
+    template_folder=TEMPLATE_DIR,
+    static_folder=STATIC_DIR
+)
 app.config['MAX_CONTENT_LENGTH'] = 16 * 1024 * 1024  # 16 MB max upload
-app.config['UPLOAD_FOLDER'] = os.path.join(os.path.dirname(__file__), 'uploads')
+app.config['UPLOAD_FOLDER'] = UPLOAD_DIR
 os.makedirs(app.config['UPLOAD_FOLDER'], exist_ok=True)
+
+# Add CORS headers to enable standalone frontend development
+@app.after_request
+def add_cors_headers(response):
+    response.headers['Access-Control-Allow-Origin'] = '*'
+    response.headers['Access-Control-Allow-Headers'] = 'Content-Type,Authorization'
+    response.headers['Access-Control-Allow-Methods'] = 'GET,POST,OPTIONS'
+    return response
 
 ALLOWED_EXTENSIONS = {'pdf', 'docx', 'txt', 'md'}
 
@@ -46,8 +64,10 @@ def get_samples():
         "interests": INTEREST_OPTIONS
     })
 
-@app.route('/api/analyze', methods=['POST'])
+@app.route('/api/analyze', methods=['POST', 'OPTIONS'])
 def analyze():
+    if request.method == 'OPTIONS':
+        return make_response(jsonify({"status": "ok"}), 200)
     """
     Main analysis endpoint. Accepts resume file upload OR pasted text,
     target job description, selected career interests, and optional API key.
@@ -109,8 +129,10 @@ def analyze():
             "error": f"Analysis failed: {str(e)}"
         }), 500
 
-@app.route('/api/export-report', methods=['POST'])
+@app.route('/api/export-report', methods=['POST', 'OPTIONS'])
 def export_report():
+    if request.method == 'OPTIONS':
+        return make_response('', 200)
     """Render a standalone, print-friendly complete report."""
     try:
         report_data = request.get_json()

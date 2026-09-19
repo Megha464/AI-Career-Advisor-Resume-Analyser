@@ -5,6 +5,6 @@ echo   AI Career Advisor & Resume Analyzer
 echo   Empowering Students and Job Seekers
 echo ========================================================
 echo.
-echo Starting application server...
-python app.py
+echo Starting application server from backend...
+python backend\app.py
 pause
